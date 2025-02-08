@@ -28,7 +28,7 @@ export class AuthController {
                 maxAge: 30 * 24 * 60 * 60 * 1000
             }
         )
-        return {token: accessToken,rtoken : refreshToken, message: 'Login successful'};
+        return {token: accessToken,rtoken: refreshToken};
     }
     @Post('refresh')
     async refresh(@Body('refreshToken') refreshToken: string,

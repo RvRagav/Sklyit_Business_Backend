@@ -25,7 +25,7 @@ export class AuthService {
         const payload = { mobileNumber: user.mobileno, email: user.gmail, sub: user.userId, bs_id:bs_id };
         // console.log('Payload before signing:', payload); // Debugging
         // Generate tokens
-        const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+        const accessToken = this.jwtService.sign(payload, { expiresIn: '30h' });
         const refreshToken = await this.generateRefreshToken(user.userId);
 
         return { accessToken, refreshToken };
