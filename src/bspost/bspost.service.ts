@@ -4,16 +4,20 @@ import { Post } from './bspost.schema';
 import { Model } from 'mongoose';
 import { CreatePostDto } from './createpost.dto';
 import { AzureBlobService } from 'src/imageBlob/imageBlob.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BspostService {
-    private readonly containerName = 'upload-file';
+    private readonly containerName :string;
     
     constructor(
         @InjectModel(Post.name)
         private postModel: Model<Post>,
-        private azureBlobService: AzureBlobService
-    ) { }
+        private azureBlobService: AzureBlobService,
+        private readonly configService: ConfigService
+    ) { 
+        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+    }
 
     async createPost(bs_id: string, createPostDto: CreatePostDto, file?: Express.Multer.File): Promise<Post> {
         if (!bs_id) {

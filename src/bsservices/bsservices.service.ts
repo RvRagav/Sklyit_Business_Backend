@@ -4,18 +4,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateServiceDto, UpdateServiceDto } from './dto/createServiceDto';
 import { AzureBlobService } from 'src/imageBlob/imageBlob.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BsservicesService {
 
-    private readonly containerName = 'upload-file';
+    private readonly containerName: string;
 
     constructor(
+        private readonly configService: ConfigService,
         @InjectRepository(Services)
         private readonly serviceRepository: Repository<Services>,
         private azureBlobService: AzureBlobService
 
-    ) { }
+    ) {
+        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+    }
+
+    
     getHello(): string {
         return 'Hello World!';
     }

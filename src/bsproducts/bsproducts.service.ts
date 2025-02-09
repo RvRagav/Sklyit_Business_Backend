@@ -4,17 +4,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProductDto, UpdateProductDto } from './bsproducts.dto';
 import { AzureBlobService } from 'src/imageBlob/imageBlob.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BsproductsService {
     
-    private readonly containerName = 'upload-file';
+    private readonly containerName:string;
     
     constructor(
         @InjectRepository(Products)
         private readonly productRepository: Repository<Products>,
-        private azureBlobService: AzureBlobService
-    ) { }
+        private azureBlobService: AzureBlobService,
+        private readonly configService: ConfigService
+    ) { 
+        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+    }
     
     async createProduct(bs_id:string,createProductDto: CreateProductDto,file?:Express.Multer.File): Promise<Products> {
         if (!bs_id) {

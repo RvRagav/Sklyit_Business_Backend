@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BsservicesController } from './bsservices.controller';
 import { BsservicesService } from './bsservices.service';
 import { AzureBlobService } from '../imageBlob/imageBlob.service';
+import { ConfigService } from '@nestjs/config';
 
 const mockAzureBlobService = {
   upload: jest.fn(), // Mock the upload function
@@ -25,6 +26,12 @@ describe('BsservicesController', () => {
         {
           provide: AzureBlobService, // Mocking AzureBlobService
           useValue: mockAzureBlobService,
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('mocked_connection_string'), // Mock implementation for get method
+          },
         },
       ],
     }).compile();

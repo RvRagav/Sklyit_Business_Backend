@@ -4,6 +4,7 @@ import { SklyitUsersService } from './sklyit_users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Users } from './sklyit_users.entity';
 import { AzureBlobService } from '../imageBlob/imageBlob.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('SklyitUsersController', () => {
   let controller: SklyitUsersController;
@@ -34,6 +35,12 @@ describe('SklyitUsersController', () => {
         {
           provide: AzureBlobService,
           useValue: mockAzureBlobService,
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('mocked_connection_string'),
+          },
         },
       ],
     }).compile();

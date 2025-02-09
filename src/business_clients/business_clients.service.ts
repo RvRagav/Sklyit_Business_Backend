@@ -5,18 +5,23 @@ import { Repository } from 'typeorm';
 import { CreateBusinessClientDto, UpdateBusinessClientDto, AddressDto } from './business_clients.dto';
 import { Users } from 'src/sklyit_users/sklyit_users.entity';
 import { AzureBlobService } from 'src/imageBlob/imageBlob.service';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
 export class BusinessClientsService {
+    private containerName: string;
     constructor(
         @InjectRepository(BusinessClients)
         private readonly businessClientsRepository: Repository<BusinessClients>,
 
         @InjectRepository(Users)
         private readonly usersRepository: Repository<Users>,    
-        private azureBlobService: AzureBlobService
-    ) { }
+        private azureBlobService: AzureBlobService,
+        private readonly configService: ConfigService
+    ) { 
+        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+    }
 
     async getAllBusinessClients(): Promise<BusinessClients[]> {
         return this.businessClientsRepository.find();
@@ -52,7 +57,7 @@ export class BusinessClientsService {
         }
         if(file){
             try {
-                const imageUrl = await this.azureBlobService.upload(file, 'upload-file');
+                const imageUrl = await this.azureBlobService.upload(file, this.containerName);
                 createBusinessClientDto.imgurl = imageUrl; // Add image URL to DTO
             } catch (error) {
                 console.error('Error uploading file:', error);
@@ -78,7 +83,7 @@ export class BusinessClientsService {
         }
         if(file){
             try {
-                const imageUrl = await this.azureBlobService.upload(file, 'upload-file');
+                const imageUrl = await this.azureBlobService.upload(file, this.containerName);
                 updateUserDto.imgurl = imageUrl; // Add image URL to DTO
             } catch (error) {
                 console.error('Error uploading file:', error);

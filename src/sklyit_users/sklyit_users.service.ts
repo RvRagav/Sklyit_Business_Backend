@@ -1,23 +1,25 @@
-
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {Repository } from 'typeorm';
 import { Users } from './sklyit_users.entity';
 import { CreateUserDto, UpdateUserDto } from './sklyit_users.dto';
 import { AzureBlobService } from 'src/imageBlob/imageBlob.service';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SklyitUsersService {
-    private readonly containerName = 'upload-file';
+    private readonly containerName: string;
 
     constructor(
+        private readonly configService: ConfigService,
         @InjectRepository(Users)
         private readonly userRepository: Repository<Users>,
+        private azureBlobService: AzureBlobService
+    ) {
+        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+    }
 
-
-        private readonly azureBlobService: AzureBlobService, // Inject AzureBlobService
-    ) { }
 
     async registerUser(createUserDto: CreateUserDto, file?: Express.Multer.File): Promise<Users> {
         const { gmail, mobileno, usertype } = createUserDto;
@@ -34,7 +36,7 @@ export class SklyitUsersService {
 // If a file is provided, upload it to Azure Blob Storage
         if (file) {
             try {
-                const imageUrl = await this.azureBlobService.upload(file, 'upload-file');
+                const imageUrl = await this.azureBlobService.upload(file, this.containerName);
                 createUserDto.imgurl = imageUrl; // Add image URL to DTO
             } catch (error) {
                 console.error('Error uploading image:', error);
@@ -89,7 +91,7 @@ export class SklyitUsersService {
         
         if (file) {
             try {
-                const imageUrl = await this.azureBlobService.upload(file, 'upload-file');
+                const imageUrl = await this.azureBlobService.upload(file, this.containerName);
                 updateUserDto.imgurl = imageUrl; // Add image URL to DTO
             } catch (error) {
                 console.error('Error uploading image:', error);
