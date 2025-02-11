@@ -20,7 +20,7 @@ export class BusinessClientsService {
         private azureBlobService: AzureBlobService,
         private readonly configService: ConfigService
     ) { 
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
 
     async getAllBusinessClients(): Promise<BusinessClients[]> {

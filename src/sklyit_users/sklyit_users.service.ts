@@ -17,7 +17,7 @@ export class SklyitUsersService {
         private readonly userRepository: Repository<Users>,
         private azureBlobService: AzureBlobService
     ) {
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
 
 

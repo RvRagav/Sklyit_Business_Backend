@@ -18,12 +18,7 @@ export class BsservicesService {
         private azureBlobService: AzureBlobService
 
     ) {
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
-    }
-
-    
-    getHello(): string {
-        return 'Hello World!';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
 
     async getServices(bs_id: string): Promise<Services[]> {
@@ -79,7 +74,7 @@ export class BsservicesService {
         }
         try {
             return await this.serviceRepository.findOne({
-                where: { businessClient: { BusinessId: bs_id }, Sid: service_id },
+                where: { businessClient: { BusinessId: bs_id }, Sid: service_id,Sflag:0 },
                 relations: ['businessClient'], // Ensure the relation is loaded
             });
         } catch (error) {

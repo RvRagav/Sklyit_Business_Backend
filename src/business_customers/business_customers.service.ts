@@ -74,7 +74,7 @@ export class BusinessCustomersService {
     async createBusinessCustomer(bs_id: string, createCustomerDto: CreateBusinessCustomerDto): Promise<Customers> {
         const { Name, email, MobileNo, address } = createCustomerDto;
         const exists = await this.CustomersRepository.findOne({
-            where: [{ businessClient: { BusinessId: bs_id }, email: email }, { businessClient: { BusinessId: bs_id }, MobileNo: MobileNo }],
+            where: [{ businessClient: { BusinessId: bs_id }, email: email ,Bflag:0}, { businessClient: { BusinessId: bs_id }, MobileNo: MobileNo, Bflag:0}],
             relations: ['businessClient'],
         })
         if (exists) {
@@ -99,10 +99,10 @@ export class BusinessCustomersService {
         if (email || MobileNo) {
             const conditions: any[] = [];
             if (email) {
-                conditions.push({ businessClient: { BusinessId: bs_id }, email: email, CustId: Not(cust_id) });
+                conditions.push({ businessClient: { BusinessId: bs_id }, email: email, CustId: Not(cust_id), Bflag:0 });
             }
             if (MobileNo) {
-                conditions.push({ businessClient: { BusinessId: bs_id }, MobileNo: MobileNo, CustId: Not(cust_id) });
+                conditions.push({ businessClient: { BusinessId: bs_id }, MobileNo: MobileNo, CustId: Not(cust_id), Bflag:0 });
             }
 
             if (conditions.length > 0) {
@@ -117,7 +117,7 @@ export class BusinessCustomersService {
         }
 
         const customer = await this.CustomersRepository.findOne({
-            where: { businessClient: { BusinessId: bs_id }, CustId: cust_id },
+            where: { businessClient: { BusinessId: bs_id }, CustId: cust_id, Bflag:0 },
             relations: ['businessClient'],
         });
 
@@ -211,5 +211,32 @@ export class BusinessCustomersService {
         }
     }
 
+    async QuickOrderCustomer(bs_id: string): Promise<string> {
+        if(!bs_id){
+            throw new Error('Business ID is required');
+        }
+        try {
+            const customer = await this.CustomersRepository.findOne({
+                where: { businessClient: { BusinessId: bs_id }, Bflag: 0,Name:"Quick Order",MobileNo:"qo" },
+                relations: ['businessClient'], // Ensure the relation is loaded
+            });
+            if (!customer) {
+                const newCustomer = this.CustomersRepository.create({
+                    Name: "Quick Order",
+                    email: "qo",
+                    MobileNo: "qo",
+                    address: "qo",
+                    businessClient: { BusinessId: bs_id },
+                    Bflag: 0
+                })
+                await this.CustomersRepository.save(newCustomer);
+                return newCustomer.CustId;
+            }
+            return customer.CustId;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
     
 }

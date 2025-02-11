@@ -17,7 +17,7 @@ export class BsproductsService {
         private azureBlobService: AzureBlobService,
         private readonly configService: ConfigService
     ) { 
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
     
     async createProduct(bs_id:string,createProductDto: CreateProductDto,file?:Express.Multer.File): Promise<Products> {
