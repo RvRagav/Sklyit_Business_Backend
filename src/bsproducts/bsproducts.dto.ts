@@ -19,6 +19,9 @@ export class CreateProductDto {
 
     @IsNumber()
     quantity: number;
+
+    @IsString()
+    units: string;
 }
 
 export class UpdateProductDto {

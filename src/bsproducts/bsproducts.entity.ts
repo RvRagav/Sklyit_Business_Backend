@@ -11,11 +11,11 @@ export class Products {
     @IsString()
     Pname: string;
 
-    @Column()
+    @Column({nullable:true})
     @IsString()
     Pdesc: string;
 
-    @Column()
+    @Column({nullable:true})
     @IsString()
     PimageUrl: string;
 
@@ -23,7 +23,7 @@ export class Products {
     @IsDecimal()
     Pprice: number;
 
-    @Column('int')
+    @Column('decimal')
     Pqty: number;
 
     @Column({ default: 0 })
@@ -33,4 +33,8 @@ export class Products {
     @ManyToOne(() => BusinessClients, (businessClient) => businessClient.products, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'business_id' })
     businessClient: BusinessClients;
+
+    @Column()
+    @IsString()
+    units: string;
 }

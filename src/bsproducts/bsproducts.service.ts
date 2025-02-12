@@ -24,7 +24,7 @@ export class BsproductsService {
         if (!bs_id) {
             throw new Error('Business ID is required');
         }
-        const { name, description, price, quantity } = createProductDto;
+        const { name, description, price, quantity,units } = createProductDto;
         let imageUrl = '';
         if (file) {
             imageUrl = await this.azureBlobService.upload(file, this.containerName);
@@ -35,6 +35,7 @@ export class BsproductsService {
             PimageUrl: imageUrl || '',
             Pprice: price,
             Pqty: quantity,
+            units:units,
             businessClient: { BusinessId: bs_id }
         });
         try {

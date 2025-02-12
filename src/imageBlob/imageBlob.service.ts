@@ -35,13 +35,12 @@ export class AzureBlobService {
   
       const fileName = uuid() + file.originalname;
       const { blobClient, containerClient } = this.getBlobClients(fileName, containerName);
-      await blobClient.uploadData(file.buffer); // Upload file data
+      await blobClient.uploadData(file.buffer, { blobHTTPHeaders: { blobContentType: file.mimetype } }); // Upload file data
   
       // Construct the URL for the uploaded file
-      const fileUrl = `https://${containerClient.accountName}.blob.core.windows.net/${containerClient.containerName}/${fileName}`;
   
       console.log(`File uploaded successfully: ${fileName}`);
-      return fileUrl; // Return the file URL
+      return blobClient.url; // Return the file URL
     } catch (error) {
       console.error('Error uploading file:', error);
       throw new Error('Failed to upload file');
