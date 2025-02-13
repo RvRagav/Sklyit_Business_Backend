@@ -97,7 +97,7 @@ export class UpdateBusinessClientDto {
 
     @IsString()
     @IsOptional()
-    imgurl?: string;
+    shopimage?: string;
 
     @IsBoolean()
     @IsOptional()

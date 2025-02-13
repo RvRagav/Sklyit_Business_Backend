@@ -7,6 +7,7 @@ import { BusinessClients } from '../business_clients/business_clients.entity';
 import { Users } from '../sklyit_users/sklyit_users.entity';
 import { SklyitUsersService } from '../sklyit_users/sklyit_users.service';
 import { RefreshToken } from '../auth/refreshtoken.entity';
+import { MailService } from './mailservice';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,8 @@ export class AuthService {
         private readonly businessClientsRepository: Repository<BusinessClients>,
         @InjectRepository(RefreshToken)
         private readonly refreshTokenRepository: Repository<RefreshToken>,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private mailService: MailService
     ) { }
 
     async login(user: Users) {
@@ -88,4 +90,6 @@ export class AuthService {
     async logout(userId: string) {
         await this.refreshTokenRepository.delete({ userId });
     }
+
+    
 }

@@ -118,4 +118,12 @@ export class SklyitUsersService {
         }
         return {name: user.name};
     }
+
+    async findByEmail(email: string): Promise<Users> {
+        const user = await this.userRepository.findOne({ where: { gmail: email } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
+    }
 }

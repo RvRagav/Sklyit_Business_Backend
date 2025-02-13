@@ -10,6 +10,7 @@ import { BusinessClients } from 'src/business_clients/business_clients.entity';
 import { BusinessClientsModule } from 'src/business_clients/business_clients.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from './refreshtoken.entity';
+import { MailService } from './mailservice';
 
 @Module({
   imports: [
@@ -23,8 +24,8 @@ import { RefreshToken } from './refreshtoken.entity';
     }),
     SklyitUsersModule,BusinessClientsModule,TypeOrmModule.forFeature([BusinessClients,RefreshToken])
   ],
-  providers: [AuthService, JwtBusStrategy],
+  providers: [AuthService, JwtBusStrategy,MailService],
   controllers: [AuthController],
-  exports:[AuthService]
+  exports:[AuthService,MailService]
 })
 export class AuthModule {}

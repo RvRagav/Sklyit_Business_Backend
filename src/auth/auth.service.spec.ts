@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { BusinessClients } from 'src/business_clients/business_clients.entity';
 import { RefreshToken } from 'src/auth/refreshtoken.entity';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from './mailservice';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -46,6 +47,10 @@ describe('AuthService', () => {
         {
           provide: JwtService,
           useValue: mockJwtService,
+        },
+        {
+          provide: MailService,
+          useValue: {},
         },
       ],
     }).compile();
