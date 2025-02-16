@@ -58,7 +58,7 @@ export class BusinessClientsService {
         if(file){
             try {
                 const imageUrl = await this.azureBlobService.upload(file, this.containerName);
-                createBusinessClientDto.imgurl = imageUrl; // Add image URL to DTO
+                createBusinessClientDto.shopimage = imageUrl; // Add image URL to DTO
             } catch (error) {
                 console.error('Error uploading file:', error);
                 throw new Error('Failed to upload file');

@@ -14,7 +14,9 @@ export class CreateBusinessClientDto {
     @IsString()
     shopdesc: string;
 
-
+    @IsString()
+    shopimage?: string;
+    
     @IsEmail()
     shopemail: string;
 
@@ -47,9 +49,6 @@ export class CreateBusinessClientDto {
     @IsString()
     userId?: string;
     // Foreign key for userId, assuming you pass it as a string
-    @IsString()
-    @IsOptional()
-    imgurl: string;
 
     @IsBoolean()
     @IsOptional()
