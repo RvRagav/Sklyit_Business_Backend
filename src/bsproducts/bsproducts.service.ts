@@ -157,6 +157,7 @@ export class BsproductsService {
         product.PimageUrl = imageUrl || product.PimageUrl;
         product.Pprice = price || product.Pprice;
         product.Pqty = quantity || product.Pqty;
+        product.units = updateProductDto.units || product.units;
         try {
             return await this.productRepository.save(product);
         } catch (error) {
