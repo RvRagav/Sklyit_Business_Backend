@@ -140,7 +140,7 @@ export class BsproductsService {
         if (!bs_id || !product_id) {
             throw new Error('Business ID and Product ID are required');
         }
-        const { name, description, imageUrl, price, quantity } = updateProductDto;
+        const { name, description, imageUrl, price, quantity, units } = updateProductDto;
         const product = await this.productRepository.findOne({
             where: { businessClient: { BusinessId: bs_id }, PId: product_id },
             relations: ['businessClient'], // Ensure the relation is loaded
@@ -157,7 +157,8 @@ export class BsproductsService {
         product.PimageUrl = imageUrl || product.PimageUrl;
         product.Pprice = price || product.Pprice;
         product.Pqty = quantity || product.Pqty;
-        product.units = updateProductDto.units || product.units;
+        product.units = units || product.units;
+        console.log(product);
         try {
             return await this.productRepository.save(product);
         } catch (error) {

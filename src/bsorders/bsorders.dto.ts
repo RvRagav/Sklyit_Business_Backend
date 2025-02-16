@@ -51,4 +51,7 @@ export class ProductDto {
 
     @IsNumber()
     quantity: number;
+
+    @IsString()
+    units: string;
 }

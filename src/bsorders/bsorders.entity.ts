@@ -11,7 +11,7 @@ export class Orders {
     @JoinColumn({ name: 'CustId' })
     customer: Customers;
 
-    @Column('date', { default: () => 'CURRENT_DATE' })
+    @Column( { default: () => 'CURRENT_DATE' })
     Odate: Date;
 
     @Column('jsonb', { nullable: true })

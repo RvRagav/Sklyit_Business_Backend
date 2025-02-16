@@ -90,7 +90,10 @@ export class BusinessClientsService {
                 throw new Error('Failed to upload file');
             }
         }
-        return await this.businessClientsRepository.save({ ...user, ...updateUserDto });
+        return await this.businessClientsRepository.save({
+            ...user, ...updateUserDto,
+            shopimage: updateUserDto.shopimage ? updateUserDto.shopimage : user.shopimage
+        });
     }
     
     async editAddress(oldaddressDto:AddressDto,newaddressDto:AddressDto, id: string): Promise<BusinessClients> {
