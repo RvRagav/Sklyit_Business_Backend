@@ -44,4 +44,8 @@ export class UpdateProductDto {
     @IsNumber()
     @IsOptional()
     quantity?: number;
+
+    @IsString()
+    @IsOptional()
+    units?: string;
 }
