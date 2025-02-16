@@ -76,24 +76,28 @@ export class BusinessClientsService {
         return await this.businessClientsRepository.save(businessClient);
     }
 
-    async updateBusinessClient(id: string, updateUserDto: UpdateBusinessClientDto,file?: Express.Multer.File): Promise<BusinessClients> {
+    async updateBusinessClient(id: string, updateBusinessDto: UpdateBusinessClientDto,file?: Express.Multer.File): Promise<BusinessClients> {
         const user = await this.businessClientsRepository.findOne({ where: { BusinessId: id } });
         if (!user) {
             throw new NotFoundException('BusinessClient not found');
         }
+        let imageUrl = '';  
         if(file){
             try {
-                const imageUrl = await this.azureBlobService.upload(file, this.containerName);
-                updateUserDto.shopimage = imageUrl; // Add image URL to DTO
+                imageUrl = await this.azureBlobService.upload(file, this.containerName);
+                updateBusinessDto.shopimage = imageUrl; // Add image URL to DTO
+                console.log(imageUrl,updateBusinessDto.shopimage);
             } catch (error) {
                 console.error('Error uploading file:', error);
                 throw new Error('Failed to upload file');
             }
         }
-        return await this.businessClientsRepository.save({
-            ...user, ...updateUserDto,
-            shopimage: updateUserDto.shopimage ? updateUserDto.shopimage : user.shopimage
+        const updatebusiness= await this.businessClientsRepository.save({
+            ...user, ...updateBusinessDto,
+            shopimage: imageUrl|| user.shopimage
         });
+        console.log(updatebusiness);
+        return updatebusiness;
     }
     
     async editAddress(oldaddressDto:AddressDto,newaddressDto:AddressDto, id: string): Promise<BusinessClients> {
