@@ -92,18 +92,8 @@ export class BusinessClientsService {
                 throw new Error('Failed to upload file');
             }
         }
-        user.shopimage = imageUrl || user.shopimage;
-        user.domainname = updateBusinessDto.domainname || user.domainname;
-        user.shopname = updateBusinessDto.shopname || user.shopname;
-        user.shopdesc = updateBusinessDto.shopdesc || user.shopdesc;
-        user.shopemail = updateBusinessDto.shopemail || user.shopemail;
-        user.shopmobile = updateBusinessDto.shopmobile || user.shopmobile;
-        user.shopOpenTime = updateBusinessDto.shopOpenTime || user.shopOpenTime;
-        user.shopClosingTime = updateBusinessDto.shopClosingTime || user.shopClosingTime;
-        user.BusinessMainTags = updateBusinessDto.BusinessMainTags || user.BusinessMainTags;
-        user.BusinessSubTags = updateBusinessDto.BusinessSubTags || user.BusinessSubTags;
-        user.OpenStatus= updateBusinessDto.openStatus || user.OpenStatus;
-        const updatebusiness= await this.businessClientsRepository.save({user});
+        console.log(user);
+        const updatebusiness= await this.businessClientsRepository.save({...user,...updateBusinessDto});
         console.log(updatebusiness);
         return updatebusiness;
     }

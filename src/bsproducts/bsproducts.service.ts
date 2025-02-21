@@ -152,6 +152,7 @@ export class BsproductsService {
         if (!product) {
             throw new Error('Product not found');
         }
+        console.log(updateProductDto);
         product.Pname = name || product.Pname;
         product.Pdesc = description || product.Pdesc;
         product.PimageUrl = imageUrl || product.PimageUrl;
