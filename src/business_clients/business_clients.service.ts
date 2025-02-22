@@ -76,6 +76,11 @@ export class BusinessClientsService {
         return await this.businessClientsRepository.save(businessClient);
     }
 
+    async checkDomain(domain: string): Promise<boolean> {
+        const existingDomain = await this.businessClientsRepository.findOne({ where: { domainname: domain } });
+        return !!existingDomain;
+    }
+
     async updateBusinessClient(id: string, updateBusinessDto: UpdateBusinessClientDto,file?: Express.Multer.File): Promise<BusinessClients> {
         const user = await this.businessClientsRepository.findOne({ where: { BusinessId: id } });
         if (!user) {

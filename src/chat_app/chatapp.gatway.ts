@@ -59,8 +59,8 @@ export class ChatGateway {
                     console.log(`Sending push notification to receiver (${receiverId})`);
 
                 
-                    const title = 'New Message';
-                    const body = '${ sender } sent you a message: ${ content }';
+                    const title = `New message from ${senderName}`;
+                    const body = `${ content }`;
                     const payload = { notification: { title, body }, token: recipientToken }; // { title, body, token: recipientToken };
                     await this.notificationService.sendNotification(payload);
                 } else {
