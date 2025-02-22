@@ -81,6 +81,7 @@ export class BusinessClientsService {
         if (!user) {
             throw new NotFoundException('BusinessClient not found');
         }
+        console.log("Before user log...");
         let imageUrl = '';  
         if(file){
             try {
@@ -93,7 +94,7 @@ export class BusinessClientsService {
                 throw new Error('Failed to upload file');
             }
         }
-        console.log(user);
+        console.log("user:", JSON.stringify(user, null, 2));  
         const updatebusiness= await this.businessClientsRepository.save({...user,...updateBusinessDto});
         console.log(updatebusiness);
         return updatebusiness;

@@ -40,7 +40,7 @@ export class BsordersService {
         if (!bs_id) {
             throw new Error('Business ID is required');
         }
-        const { custid, services, products,ODate } = createOrderDto;
+        const { custid, services, products, ODate } = createOrderDto;
         try {
             const order = this.ordersRepository.create({
                 Odate: ODate,
@@ -96,6 +96,109 @@ export class BsordersService {
             console.log(error);
             throw error;
         }
+    }
+
+
+    async getTopCustomersByDateRange(bs_id: string, from: Date, to: Date) {
+        return this.ordersRepository.query(
+            `SELECT customer."CustId", customer."Name", SUM(
+            (SELECT COALESCE(SUM((elem->>'cost')::NUMERIC * (elem->>'quantity')::NUMERIC), 0)
+             FROM jsonb_array_elements(orders."Services") AS elem) +
+            (SELECT COALESCE(SUM((elem->>'cost')::NUMERIC * (elem->>'quantity')::NUMERIC), 0)
+             FROM jsonb_array_elements(orders."Products") AS elem)
+        ) AS total_spent
+        FROM "Orders" orders
+        JOIN "Customers" customer ON orders."CustId" = customer."CustId"
+        WHERE orders."Odate" BETWEEN $1 AND $2
+          AND orders."business_id" = $3
+        GROUP BY customer."CustId", customer."Name"
+        ORDER BY total_spent DESC
+        LIMIT 10`, [from, to, bs_id]
+        );
+    }
+    //get total revenue using date range
+    async getTotalRevenue(bs_id: string, from: Date, to: Date) {
+        return this.ordersRepository.query(
+            `SELECT SUM(
+            (SELECT COALESCE(SUM((elem->>'cost')::NUMERIC * (elem->>'quantity')::NUMERIC), 0)
+             FROM jsonb_array_elements(orders."Services") AS elem) +
+            (SELECT COALESCE(SUM((elem->>'cost')::NUMERIC * (elem->>'quantity')::NUMERIC), 0)
+             FROM jsonb_array_elements(orders."Products") AS elem)
+        ) AS total_revenue
+        FROM "Orders" orders
+        WHERE orders."Odate" BETWEEN $1 AND $2
+          AND orders."business_id" = $3`, [from, to, bs_id]
+        );
+    }
+
+    async getDailyPerformance(bs_id: string, date: string) {
+        return this.ordersRepository.query(
+            `WITH OrderDetails AS (
+            SELECT 
+                orders."Oid",
+                orders."Odate",
+                orders."CustId",
+                jsonb_array_elements(orders."Products") AS product,
+                jsonb_array_elements(orders."Services") AS service
+            FROM "Orders" orders
+            WHERE orders."business_id" = $1
+              AND DATE(orders."Odate") = $2
+        ),
+        CustomerStats AS (
+            SELECT 
+                COUNT(DISTINCT CASE WHEN first_order."Odate" = orders."Odate" THEN orders."CustId" END) AS new_customers,
+                COUNT(DISTINCT orders."CustId") AS total_customers
+            FROM "Orders" orders
+            LEFT JOIN (
+                SELECT "CustId", MIN("Odate") AS "Odate"
+                FROM "Orders"
+                WHERE "business_id" = $1
+                GROUP BY "CustId"
+            ) AS first_order ON orders."CustId" = first_order."CustId"
+            WHERE DATE(orders."Odate") = $2
+              AND orders."business_id" = $1
+        ),
+        RevenueStats AS (
+            SELECT SUM(
+                (SELECT COALESCE(SUM((p->>'cost')::NUMERIC * (p->>'quantity')::NUMERIC), 0)
+                 FROM jsonb_array_elements(orders."Products") AS p) +
+                (SELECT COALESCE(SUM((s->>'cost')::NUMERIC * (s->>'quantity')::NUMERIC), 0)
+                 FROM jsonb_array_elements(orders."Services") AS s)
+            ) AS total_revenue
+            FROM "Orders" orders
+            WHERE DATE(orders."Odate") = $2
+              AND orders."business_id" = $1
+        ),
+        OrderDensity AS (
+            SELECT EXTRACT(HOUR FROM orders."Odate") AS order_hour, COUNT(*) AS order_count
+            FROM "Orders" orders
+            WHERE DATE(orders."Odate") = $2
+              AND orders."business_id" = $1
+            GROUP BY order_hour
+        )
+        SELECT 
+            jsonb_agg(DISTINCT jsonb_build_object(
+                'name', product->>'pname',
+                'quantity', (product->>'quantity')::NUMERIC,
+                'timestamp', orders."Odate"
+            )) AS products_sold,
+            jsonb_agg(DISTINCT jsonb_build_object(
+                'name', service->>'sname',
+                'quantity', (service->>'quantity')::NUMERIC,
+                'timestamp', orders."Odate"
+            )) AS services_sold,
+            (SELECT jsonb_build_object(
+                'total_customers', total_customers,
+                'new_customers', new_customers
+            ) FROM CustomerStats) AS customer_data,
+            (SELECT jsonb_build_object(
+                'total_revenue', total_revenue
+            ) FROM RevenueStats) AS revenue_data,
+            (SELECT jsonb_agg(jsonb_build_object('hour', order_hour, 'orders', order_count)) 
+             FROM OrderDensity) AS busy_hours
+        FROM OrderDetails orders;`,
+            [bs_id, date]
+        );
     }
 
 
@@ -258,29 +361,29 @@ export class BsordersService {
 
     //2)ANALYTICS PART:CUSTOMERS
     //NO OF VISITS OVER THE WEEK AND MONTH BY THE CUSTOMERS
-    async getTop6CustomersBySpending(businessId:string) {
+    async getTop6CustomersBySpending(businessId: string) {
         const query = `
-SELECT
-    subquery."CustId",
-    c."Name" AS customer_name,
-    SUM(
-        COALESCE((products_costs->>'cost')::NUMERIC, 0) + 
-        COALESCE((services_costs->>'cost')::NUMERIC, 0)
-    ) AS total
-FROM (
-    SELECT
-        "CustId",
-        jsonb_array_elements("Products") AS products_costs,
-        jsonb_array_elements("Services") AS services_costs
-    FROM "Orders" 
-    WHERE "business_id" = $1
-    AND "Odate" >= NOW() - INTERVAL '1 month'
-) subquery
-JOIN "Customers" c ON subquery."CustId" = c."CustId"
-GROUP BY subquery."CustId", c."Name"
-ORDER BY total DESC
-LIMIT 6;
-    `;
+            SELECT
+                subquery."CustId",
+                c."Name" AS customer_name,
+                SUM(
+                    COALESCE((products_costs->>'cost')::NUMERIC, 0) + 
+                    COALESCE((services_costs->>'cost')::NUMERIC, 0)
+                ) AS total
+            FROM (
+                SELECT
+                    "CustId",
+                    jsonb_array_elements("Products") AS products_costs,
+                    jsonb_array_elements("Services") AS services_costs
+                FROM "Orders" 
+                WHERE "business_id" = $1
+                AND "Odate" >= NOW() - INTERVAL '1 month'
+            ) subquery
+            JOIN "Customers" c ON subquery."CustId" = c."CustId"
+            GROUP BY subquery."CustId", c."Name"
+            ORDER BY total DESC
+            LIMIT 6;
+            `;
         try {
             console.log("Business ID:", businessId);
             console.log("Query:", query);
@@ -299,27 +402,27 @@ LIMIT 6;
     }//name req
     async getBottom3CustomersBySpending(businessId: string) {
         const query = `
-   SELECT
-    subquery."CustId",
-    c."Name" AS customer_name,
-    SUM(
-        COALESCE((products_costs->>'cost')::NUMERIC, 0) + 
-        COALESCE((services_costs->>'cost')::NUMERIC, 0)
-    ) AS total
-FROM (
-    SELECT
-        "CustId",
-        jsonb_array_elements("Products") AS products_costs,
-        jsonb_array_elements("Services") AS services_costs
-    FROM "Orders" 
-    WHERE "business_id" = $1
-    AND "Odate" >= NOW() - INTERVAL '1 month'
-) subquery
-JOIN "Customers" c ON subquery."CustId" = c."CustId"
-GROUP BY subquery."CustId", c."Name"
-ORDER BY total ASC
-LIMIT 3;
-    `;
+        SELECT
+            subquery."CustId",
+            c."Name" AS customer_name,
+            SUM(
+                COALESCE((products_costs->>'cost')::NUMERIC, 0) + 
+                COALESCE((services_costs->>'cost')::NUMERIC, 0)
+            ) AS total
+            FROM (
+                SELECT
+                    "CustId",
+                    jsonb_array_elements("Products") AS products_costs,
+                    jsonb_array_elements("Services") AS services_costs
+                FROM "Orders" 
+                WHERE "business_id" = $1
+                AND "Odate" >= NOW() - INTERVAL '1 month'
+            ) subquery
+            JOIN "Customers" c ON subquery."CustId" = c."CustId"
+            GROUP BY subquery."CustId", c."Name"
+            ORDER BY total ASC
+            LIMIT 3;
+            `;
         try {
             console.log("Business ID:", businessId);
             console.log("Query:", query);
@@ -339,18 +442,18 @@ LIMIT 3;
 
     async getTop3VisitedCustomers(businessId: string) {
         const query = `
-  SELECT
-  o."CustId",
-  c."Name" AS customer_name,
-  COUNT(*) AS total_count
-FROM "Orders" o
-JOIN "Customers" c ON o."CustId" = c."CustId"
-WHERE o."business_id" = $1
-  AND o."Odate" >= NOW() - INTERVAL '1 month'
-GROUP BY o."CustId", c."Name"
-ORDER BY total_count DESC
-LIMIT 3;
- `;
+            SELECT
+                o."CustId",
+                c."Name" AS customer_name,
+                COUNT(*) AS total_count
+            FROM "Orders" o
+            JOIN "Customers" c ON o."CustId" = c."CustId"
+            WHERE o."business_id" = $1
+            AND o."Odate" >= NOW() - INTERVAL '1 month'
+            GROUP BY o."CustId", c."Name"
+            ORDER BY total_count DESC
+            LIMIT 3;
+            `;
         try {
             console.log("Business ID:", businessId);
             console.log("Query:", query);
@@ -369,17 +472,17 @@ LIMIT 3;
     }
     async getBottom3VisitedCustomers(businessId: string) {
         const query = `
-  SELECT
-  o."CustId",
-  c."Name" AS customer_name,
-  COUNT(*) AS total_count
-FROM "Orders" o
-JOIN "Customers" c ON o."CustId" = c."CustId"
-WHERE o."business_id" = $1
-  AND o."Odate" >= NOW() - INTERVAL '1 month'
-GROUP BY o."CustId", c."Name"
-ORDER BY total_count ASC
-LIMIT 3;
+            SELECT
+                o."CustId",
+                c."Name" AS customer_name,
+                COUNT(*) AS total_count
+            FROM "Orders" o
+            JOIN "Customers" c ON o."CustId" = c."CustId"
+            WHERE o."business_id" = $1
+            AND o."Odate" >= NOW() - INTERVAL '1 month'
+            GROUP BY o."CustId", c."Name"
+            ORDER BY total_count ASC
+            LIMIT 3;
  `;
         try {
             console.log("Business ID:", businessId);
@@ -637,8 +740,8 @@ GROUP BY
         `;
         const result = await this.ordersRepository.query(query, [businessId, CustId]);
         return result.map((item) => ({
-            services:item.service,
-            date:item.Odate
+            services: item.service,
+            date: item.Odate
         }));
 
     }

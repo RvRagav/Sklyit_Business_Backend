@@ -7,74 +7,103 @@ import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 @Controller('bs/')
 @UseGuards(JwtAuthGuard)
 export class BsordersController {
-    constructor(private readonly bsordersService: BsordersService) { }
-    
-    @Get('orders')
-    async getAllOrders(@Req() req): Promise<Orders[]> {
-      return this.bsordersService.getAllOrders(req.user.bs_id);
-    }
+  constructor(private readonly bsordersService: BsordersService) { }
 
-    @Get('orders/:Oid')
-    async getOrderById(@Req() req,@Param('Oid') Oid: string): Promise<Orders> {
-      return this.bsordersService.getOrderById(req.user.bs_id, Oid);
-    }
+  @Get('orders')
+  async getAllOrders(@Req() req): Promise<Orders[]> {
+    return this.bsordersService.getAllOrders(req.user.bs_id);
+  }
 
-    @Post('orders')
-    async createOrder(@Req() req,@Body() createOrderDto: CreateOrdersDto): Promise<Orders> {
-      return this.bsordersService.createOrder(req.user.bs_id, createOrderDto);  
-    }
+  @Get('orders/:Oid')
+  async getOrderById(@Req() req, @Param('Oid') Oid: string): Promise<Orders> {
+    return this.bsordersService.getOrderById(req.user.bs_id, Oid);
+  }
 
-    @Put('orders/:Oid')
-    async updateOrder(@Req() req, @Param('Oid') Oid: string, @Body() updateOrderDto: CreateOrdersDto): Promise<Orders> {  
-      return this.bsordersService.updateOrder(req.user.bs_id, Oid, updateOrderDto);
-    }
+  @Post('orders')
+  async createOrder(@Req() req, @Body() createOrderDto: CreateOrdersDto): Promise<Orders> {
+    return this.bsordersService.createOrder(req.user.bs_id, createOrderDto);
+  }
 
-    @Delete('orders/:Oid')
-    async deleteOrder(@Req() req,@Param('Oid') Oid: string): Promise<void> {
-      return this.bsordersService.deleteOrder(req.user.bs_id, Oid);
-    }
+  @Put('orders/:Oid')
+  async updateOrder(@Req() req, @Param('Oid') Oid: string, @Body() updateOrderDto: CreateOrdersDto): Promise<Orders> {
+    return this.bsordersService.updateOrder(req.user.bs_id, Oid, updateOrderDto);
+  }
 
-      // Endpoints to get top 3 services for a given period
-    @Get('top-services-count')
-    async getTopServicesCount(
-      @Req() req,
-      // @Query('startDate') startDate: string,
-      // @Query('endDate') endDate: string,
-    ) {
-      return this.bsordersService.getTop3Services((req.user.bs_id));
-    }
-    @Get('bottom-services-count')
-    async getBottomServicesCount(@Req() req,
-      // @Query('startDate') startDate: string,
-      // @Query('endDate') endDate: string,
-    ) {
-      return this.bsordersService.getBottom3Services((req.user.bs_id));
-    }
-    //BY REVENUE
-    @Get('top-services-revenue')
-    async getTopServicesRevenue(
-      @Req() req,
-    ) {
-      return this.bsordersService.getTop3ServicesByRevenue((req.user.bs_id));
-    }
-    @Get('top-services-revenue-weekly')
-    async getTopServicesRevenueWeek(
-      @Req() req,
-    ) {
-      return this.bsordersService.getTop3ServicesByRevenueWeek((req.user.bs_id));
-    }
+  @Delete('orders/:Oid')
+  async deleteOrder(@Req() req, @Param('Oid') Oid: string): Promise<void> {
+    return this.bsordersService.deleteOrder(req.user.bs_id, Oid);
+  }
 
-    @Get('top-services-revenue-yearly')
-    async getTopServicesRevenueYear(
-      @Req() req,
-    ) {
-      return this.bsordersService.getTop3ServicesByRevenueYear((req.user.bs_id));
-    }
+  @Get('top_customers_date_range')
+  async getTopCustomersByDateRange(@Req() req,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    const fromDate = new Date(startDate);
+    const toDate = new Date(endDate);
+    return this.bsordersService.getTopCustomersByDateRange(req.user.bs_id, fromDate, toDate);
+  }
+  //total revenue using Date range
+  @Get('total_revenue_date_range')
+  async getTotalRevenue(
+    @Req() req,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    const fromDate = new Date(startDate);
+    const toDate = new Date(endDate);
+    return this.bsordersService.getTotalRevenue(req.user.bs_id, fromDate, toDate);
+  }
+
+  @Get('daily_performance')
+  async getDailyPerformance(
+    @Req() req,
+    @Query('date') date: string,
+  ) {
+    return this.bsordersService.getDailyPerformance(req.user.bs_id, date);
+  }
+
+  // Endpoints to get top 3 services for a given period
+  @Get('top-services-count')
+  async getTopServicesCount(
+    @Req() req,
+    // @Query('startDate') startDate: string,
+    // @Query('endDate') endDate: string,
+  ) {
+    return this.bsordersService.getTop3Services((req.user.bs_id));
+  }
+  @Get('bottom-services-count')
+  async getBottomServicesCount(@Req() req,
+    // @Query('startDate') startDate: string,
+    // @Query('endDate') endDate: string,
+  ) {
+    return this.bsordersService.getBottom3Services((req.user.bs_id));
+  }
+  //BY REVENUE
+  @Get('top-services-revenue')
+  async getTopServicesRevenue(
+    @Req() req,
+  ) {
+    return this.bsordersService.getTop3ServicesByRevenue((req.user.bs_id));
+  }
+  @Get('top-services-revenue-weekly')
+  async getTopServicesRevenueWeek(
+    @Req() req,
+  ) {
+    return this.bsordersService.getTop3ServicesByRevenueWeek((req.user.bs_id));
+  }
+
+  @Get('top-services-revenue-yearly')
+  async getTopServicesRevenueYear(
+    @Req() req,
+  ) {
+    return this.bsordersService.getTop3ServicesByRevenueYear((req.user.bs_id));
+  }
 
   // Endpoint for weekly analytics (with req.user.bs_id)
   @Get('total-analytics')
   async getTotalAnalytics(@Req() req) {
-    return this.bsordersService.getTotalCustomersAndRevenueInBusiness(req.user.bs_id); 
+    return this.bsordersService.getTotalCustomersAndRevenueInBusiness(req.user.bs_id);
   }
 
   @Get('top-customers-revenue')
@@ -97,7 +126,7 @@ export class BsordersController {
   ) {
     return this.bsordersService.getTop3VisitedCustomers((req.user.bs_id));
   }
-  
+
   @Get('bottom-customers-count')
   async getBottomCustomersByVisited(
     @Req() req,
@@ -108,7 +137,7 @@ export class BsordersController {
   @Get('weekly_analytics')
   async getWeeklyAnalytics(
     @Req() req)  // Include req.user.bs_id as a query parameter
-   {
+  {
     return this.bsordersService.getWeeklyAnalytics(req.user.bs_id);
   }
 
@@ -135,7 +164,7 @@ export class BsordersController {
   ) {
     return this.bsordersService.getMonthlyComparison((req.user.bs_id), year, month);
   }
-  
+
   @Get('past_services')
   async getPastServices(
     @Req() req,
@@ -143,7 +172,7 @@ export class BsordersController {
   ) {
     return this.bsordersService.getPastServices((req.user.bs_id), CustId);
   }
-  
+
   @Get('retention_churn_rate')
   async getRetentionChurnRate(
     @Req() req,
