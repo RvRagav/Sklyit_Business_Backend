@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Timestamp } from 'typeorm';
 import { Customers } from './../business_customers/business_customers.entity';
 import { BusinessClients } from './../business_clients/business_clients.entity'; // Assuming BusinessClients table exists
 
@@ -11,7 +11,7 @@ export class Orders {
     @JoinColumn({ name: 'CustId' })
     customer: Customers;
 
-    @Column('date', { default: () => 'CURRENT_DATE' })
+    @Column( { default: () => 'CURRENT_TIMESTAMP' })
     Odate: Date;
 
     @Column('jsonb', { nullable: true })

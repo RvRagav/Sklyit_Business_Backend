@@ -15,7 +15,7 @@ import { Response } from 'express';
 
 @Controller('blob')
 export class BlobController {
-  private readonly containerName = 'upload-file'; // Replace with your container name
+  private readonly containerName = 'biz'; // Replace with your container name
 
   constructor(private readonly azureBlobService: AzureBlobService) {}
 

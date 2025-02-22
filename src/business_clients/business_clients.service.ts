@@ -20,7 +20,7 @@ export class BusinessClientsService {
         private azureBlobService: AzureBlobService,
         private readonly configService: ConfigService
     ) { 
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
 
     async getAllBusinessClients(): Promise<BusinessClients[]> {
@@ -58,7 +58,7 @@ export class BusinessClientsService {
         if(file){
             try {
                 const imageUrl = await this.azureBlobService.upload(file, this.containerName);
-                createBusinessClientDto.imgurl = imageUrl; // Add image URL to DTO
+                createBusinessClientDto.shopimage = imageUrl; // Add image URL to DTO
             } catch (error) {
                 console.error('Error uploading file:', error);
                 throw new Error('Failed to upload file');
@@ -81,21 +81,27 @@ export class BusinessClientsService {
         return !!existingDomain;
     }
 
-    async updateBusinessClient(id: string, updateUserDto: UpdateBusinessClientDto,file?: Express.Multer.File): Promise<BusinessClients> {
+    async updateBusinessClient(id: string, updateBusinessDto: UpdateBusinessClientDto,file?: Express.Multer.File): Promise<BusinessClients> {
         const user = await this.businessClientsRepository.findOne({ where: { BusinessId: id } });
         if (!user) {
             throw new NotFoundException('BusinessClient not found');
         }
+        let imageUrl = '';  
         if(file){
             try {
-                const imageUrl = await this.azureBlobService.upload(file, this.containerName);
-                updateUserDto.imgurl = imageUrl; // Add image URL to DTO
+                imageUrl = await this.azureBlobService.upload(file, this.containerName);
+                updateBusinessDto.shopimage = imageUrl; // Add image URL to DTO
+                user.shopimage = imageUrl;
+                console.log(imageUrl, updateBusinessDto.shopimage);
             } catch (error) {
                 console.error('Error uploading file:', error);
                 throw new Error('Failed to upload file');
             }
         }
-        return await this.businessClientsRepository.save({ ...user, ...updateUserDto });
+        console.log(user);
+        const updatebusiness= await this.businessClientsRepository.save({...user,...updateBusinessDto});
+        console.log(updatebusiness);
+        return updatebusiness;
     }
     
     async editAddress(oldaddressDto:AddressDto,newaddressDto:AddressDto, id: string): Promise<BusinessClients> {

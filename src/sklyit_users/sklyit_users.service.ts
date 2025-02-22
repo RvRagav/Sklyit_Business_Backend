@@ -17,7 +17,7 @@ export class SklyitUsersService {
         private readonly userRepository: Repository<Users>,
         private azureBlobService: AzureBlobService
     ) {
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
 
 
@@ -117,5 +117,13 @@ export class SklyitUsersService {
             throw new NotFoundException('User not found');
         }
         return {name: user.name};
+    }
+
+    async findByEmail(email: string): Promise<Users> {
+        const user = await this.userRepository.findOne({ where: { gmail: email } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
     }
 }

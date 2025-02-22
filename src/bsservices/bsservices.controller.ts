@@ -10,11 +10,6 @@ import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 export class BsservicesController {
     constructor(private readonly bsservicesService: BsservicesService) { }
 
-    @Get('hello')
-    getHello(): string {
-        return this.bsservicesService.getHello();
-    }
-
     @Get('services')
     getServices(
         @Req() req): Promise<Services[]> {

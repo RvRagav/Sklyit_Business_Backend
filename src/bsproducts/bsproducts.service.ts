@@ -17,14 +17,14 @@ export class BsproductsService {
         private azureBlobService: AzureBlobService,
         private readonly configService: ConfigService
     ) { 
-        this.containerName = this.configService.get<string>('CONTAINER_NAME') || 'biz';
+        this.containerName = this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME');
     }
     
     async createProduct(bs_id:string,createProductDto: CreateProductDto,file?:Express.Multer.File): Promise<Products> {
         if (!bs_id) {
             throw new Error('Business ID is required');
         }
-        const { name, description, price, quantity } = createProductDto;
+        const { name, description, price, quantity,units } = createProductDto;
         let imageUrl = '';
         if (file) {
             imageUrl = await this.azureBlobService.upload(file, this.containerName);
@@ -35,6 +35,7 @@ export class BsproductsService {
             PimageUrl: imageUrl || '',
             Pprice: price,
             Pqty: quantity,
+            units:units,
             businessClient: { BusinessId: bs_id }
         });
         try {
@@ -139,7 +140,7 @@ export class BsproductsService {
         if (!bs_id || !product_id) {
             throw new Error('Business ID and Product ID are required');
         }
-        const { name, description, imageUrl, price, quantity } = updateProductDto;
+        const { name, description, imageUrl, price, quantity, units } = updateProductDto;
         const product = await this.productRepository.findOne({
             where: { businessClient: { BusinessId: bs_id }, PId: product_id },
             relations: ['businessClient'], // Ensure the relation is loaded
@@ -151,11 +152,14 @@ export class BsproductsService {
         if (!product) {
             throw new Error('Product not found');
         }
+        console.log(updateProductDto);
         product.Pname = name || product.Pname;
         product.Pdesc = description || product.Pdesc;
         product.PimageUrl = imageUrl || product.PimageUrl;
         product.Pprice = price || product.Pprice;
         product.Pqty = quantity || product.Pqty;
+        product.units = units || product.units;
+        console.log(product);
         try {
             return await this.productRepository.save(product);
         } catch (error) {

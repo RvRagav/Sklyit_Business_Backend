@@ -60,4 +60,8 @@ export class BusinessCustomersController {
         return await this.businessCustomersService.getNewOldCustomers(req.user.bs_id);
     }
 
+    @Get('quick_order_customer')
+    async QuickOrderCustomer(@Req() req): Promise<string> {
+        return await this.businessCustomersService.QuickOrderCustomer(req.user.bs_id);
+    }
 }

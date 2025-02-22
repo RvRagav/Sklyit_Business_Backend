@@ -31,15 +31,18 @@ export class UpdateOrdersDto {
     products: ProductDto[];
 }
 
-class ServiceDto {
+export class ServiceDto {
     @IsString()
     sname: string;
 
     @IsNumber()
     cost: number;
+
+    @IsNumber()
+    quantity: number;
 }
 
-class ProductDto {
+export class ProductDto {
     @IsString()
     pname: string;
   
@@ -48,4 +51,7 @@ class ProductDto {
 
     @IsNumber()
     quantity: number;
+
+    @IsString()
+    units: string;
 }
